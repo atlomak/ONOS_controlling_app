@@ -1,5 +1,4 @@
 import requests
-from ipaddress import ip_address
 import json
 
 class OnosIpException(Exception):
@@ -10,17 +9,30 @@ class Switch:
         self.id = id
         self.available = available
         self.links = []
+        self.hosts = []
     def __str__(self):
-        result = f"Switch id: {self.id} available: {self.available}, \n \
-        links: \n"
+        result = f"Switch id: {self.id} available: {self.available}, \nlinks: {len(self.links)}\n"
         for link in self.links:
             result = result + str(link)
+        result += f"host(s): {len(self.hosts)}\n"
+        for host in self.hosts:
+            result += str(host) +" \n"
         return result
         
 
 
 class Host:
-    pass
+    def __init__(self, ip, mac, locationId, locationPort):
+        self.ip = ip
+        self.mac = mac
+        self.locationId = locationId
+        self.locationPort = locationPort
+    def __str__(self):
+        result = f" ip: {self.ip} \n" \
+        + f" mac: {self.mac} \n" \
+        + f" switch: {self.locationId} \n" \
+        + f" port: {self.locationPort}"
+        return result
 
 class Link:
     def __init__(self,src,srcPort,dst,dstPort,state,linkType):
@@ -31,10 +43,10 @@ class Link:
         self.state = state
         self.linkType = linkType
     def __str__(self):
-        result = f"src: {self.src} \n \
-            port: {self.srcPort} \n \
-            dst: {self.dst} \n\
-            port: {self.dstPort} \n"
+        result = f" src: {self.src} \n"\
+            + f" port: {self.srcPort} \n"\
+            + f" dst: {self.dst} \n"\
+            + f" port: {self.dstPort} \n"
         return result
         
 
@@ -80,7 +92,25 @@ class Controller:
                                             dstPort=dst_dict["port"], \
                                             state=state, \
                                             linkType=linkType))
-
+    def loadHosts(self):
+        url = f"{self.ip}/hosts"
+        r = self.s.get(url)
+        hosts_json = r.json()
+        hosts = hosts_json["hosts"]
+        print(hosts)
+        for host_dict in hosts:
+            ip = host_dict["ipAddresses"][0]
+            mac = host_dict["mac"]
+            locations_dict = host_dict["locations"][0]
+            elementId = locations_dict["elementId"]
+            port = locations_dict["port"]
+            host = Host(ip=ip, mac=mac, locationId=elementId, locationPort=port)
+            print(1000000000)
+            self.hosts.append(host)
+            for switch in self.switches:
+                if switch.id == host.locationId:
+                    switch.hosts.append(host)
+            
 
     def showDevices(self) -> None:
         for switch in self.switches:
@@ -93,4 +123,5 @@ if __name__ == "__main__":
     test = Controller(ip="192.168.88.27",port="8181",user="onos",password="rocks")
     test.loadDevices()
     test.loadLinks()
+    test.loadHosts()
     test.showDevices()
