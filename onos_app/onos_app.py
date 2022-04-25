@@ -120,18 +120,58 @@ class Controller:
             print(switch)
     
     # Algorithms #
-    def DijkstraAlgorithm(self, h1: str, h2: str) -> None:
+    def DijkstraAlgorithm(self, h1: str, h2: str, stream = 10) -> list():
         q = self.switches.copy()
-        s = []  # Route 
-        d = {}  # value to reach a switch
-        p = {}  # 
-
+        s = set()
+        # Dict to help assigning nextSwitch based on link objects #
+        switches = {}
+        for switch in q:
+            switches[switch.id] = switch
+        u = {}
+        # checking src switch and dst switch #
         for host in self.hosts:
             if h1 == host.ip:
                 switch1 = host.switch
             if h2 == host.ip:
                 switch2 = host.switch
+        for switch in self.switches:
+            u[switch.id] = [999,0]
+        u[switch1.id] = [0,0]  # distance, previous switch #
+        u_copy = u.copy()
+        while len(q)>0:
+            min_u = sorted(u_copy.items(), key=lambda x: x[1])   # (id,distance,previous)
+            id = min_u[0][0]
+            currentSwitch = switches[id]
+            q.remove(currentSwitch)
+            s.add(currentSwitch)
+            for link in currentSwitch.links:
+                nextSwitch = switches[link.dst]
+                if nextSwitch in q:
+                    d = u[nextSwitch.id][0]
+                    if d > (u[currentSwitch.id][0] + link.value):
+                        u[nextSwitch.id][0] = (u[currentSwitch.id][0] + link.value)
+                        u[nextSwitch.id][1] = currentSwitch.id
+            del u_copy[id]
+        # creating route list #
+        result = []
+        def route(id):
+            result.append(id)
+            next_id = u[id][1]
+            if next_id != 0:
+                route(next_id)
+        route(switch2.id)
+        result.reverse()
+        return result
+                
+            
+            
+
+
+
+
+                
         
+
         
 
 
@@ -140,4 +180,4 @@ if __name__ == "__main__":
     test.loadDevices()
     test.loadLinks()
     test.loadHosts()
-    test.showDevices()
+    print(test.DijkstraAlgorithm("10.0.0.2", "10.0.0.3"))
