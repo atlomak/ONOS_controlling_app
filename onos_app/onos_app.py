@@ -111,10 +111,10 @@ class Controller:
                     hostSwitch = switch
             host = Host(ip=ip, mac=mac,switch=hostSwitch, locationId=elementId, locationPort=port)
             # Adding refrence to host for switch object #
-            self.hosts.append(host)
+            self.hosts.add(host)
             for switch in self.switches:
                 if switch.id == host.locationId:
-                    switch.hosts.append(host)
+                    switch.hosts.add(host)
     def showDevices(self) -> None:
         for switch in self.switches:
             print(switch)
