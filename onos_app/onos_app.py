@@ -118,7 +118,8 @@ class Controller:
     def showDevices(self) -> None:
         for switch in self.switches:
             print(switch)
-    
+    def postFlow(h1, h2, route):
+        pass
     # Algorithms #
     def DijkstraAlgorithm(self, h1: str, h2: str, stream = 10) -> list():
         q = self.switches.copy()
@@ -180,4 +181,4 @@ if __name__ == "__main__":
     test.loadDevices()
     test.loadLinks()
     test.loadHosts()
-    print(test.DijkstraAlgorithm("10.0.0.2", "10.0.0.3"))
+    print(test.DijkstraAlgorithm("10.0.0.2", "10.0.0.9"))
