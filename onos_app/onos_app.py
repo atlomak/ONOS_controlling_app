@@ -8,8 +8,8 @@ class Switch:
     def __init__(self, id, available):
         self.id = id
         self.available = available
-        self.links = []
-        self.hosts = []
+        self.links = set()
+        self.hosts = set()
     def __str__(self):
         result = f"Switch id: {self.id} available: {self.available}, \nlinks: {len(self.links)}\n"
         for link in self.links:
@@ -22,9 +22,10 @@ class Switch:
 
 
 class Host:
-    def __init__(self, ip, mac, locationId, locationPort):
+    def __init__(self, ip, mac, switch, locationId, locationPort):
         self.ip = ip
         self.mac = mac
+        self.switch = switch
         self.locationId = locationId
         self.locationPort = locationPort
     def __str__(self):
@@ -35,13 +36,14 @@ class Host:
         return result
 
 class Link:
-    def __init__(self,src,srcPort,dst,dstPort,state,linkType):
+    def __init__(self,src,srcPort,dst,dstPort,state,linkType,value = 1):
         self.src = src
         self.srcPort = srcPort
         self.dst = dst
         self.dstPort = dstPort
         self.state = state
         self.linkType = linkType
+        self.value = value
     def __str__(self):
         result = f" src: {self.src} \n"\
             + f" port: {self.srcPort} \n"\
@@ -56,8 +58,8 @@ class Controller:
             self.s = requests.session()
             self.ip = f"http://{ip}:{port}/onos/v1"
             self.s.auth = (user,password)
-            self.hosts = []
-            self.switches = []
+            self.switches = set()
+            self.hosts = set()
             r = self.s.get(url=f"{self.ip}/devices")
             r.raise_for_status()
         except Exception as err:
@@ -71,10 +73,10 @@ class Controller:
             devices = devices_json["devices"]
             for device in devices:
                 if(device["type"]=="SWITCH"):
-                    self.switches.append(Switch(id=device["id"],available=device["available"]))
+                    self.switches.add(Switch(id=device["id"],available=device["available"]))
         except requests.HTTPError() as err:
             print(f"Problem with connection, {err}")
-    def loadLinks(self):
+    def loadLinks(self) -> None:
         url = f"{self.ip}/links"
         r = self.s.get(url=url)
         links_json = r.json()
@@ -86,36 +88,50 @@ class Controller:
             linkType = link["type"]
             for switch in self.switches:
                 if switch.id == src_dict["device"]:
-                    switch.links.append(Link(src=src_dict["device"], \
+                    switch.links.add(Link(src=src_dict["device"], \
                                             srcPort=src_dict["port"], \
                                             dst=dst_dict["device"], \
                                             dstPort=dst_dict["port"], \
                                             state=state, \
                                             linkType=linkType))
-    def loadHosts(self):
+    def loadHosts(self) -> None:
         url = f"{self.ip}/hosts"
         r = self.s.get(url)
         hosts_json = r.json()
         hosts = hosts_json["hosts"]
-        print(hosts)
         for host_dict in hosts:
             ip = host_dict["ipAddresses"][0]
             mac = host_dict["mac"]
             locations_dict = host_dict["locations"][0]
             elementId = locations_dict["elementId"]
             port = locations_dict["port"]
-            host = Host(ip=ip, mac=mac, locationId=elementId, locationPort=port)
-            print(1000000000)
+            # Adding refrence to switch for host object #
+            for switch in self.switches:
+                if switch.id == elementId:
+                    hostSwitch = switch
+            host = Host(ip=ip, mac=mac,switch=hostSwitch, locationId=elementId, locationPort=port)
+            # Adding refrence to host for switch object #
             self.hosts.append(host)
             for switch in self.switches:
                 if switch.id == host.locationId:
                     switch.hosts.append(host)
-            
-
     def showDevices(self) -> None:
         for switch in self.switches:
             print(switch)
-            
+    
+    # Algorithms #
+    def DijkstraAlgorithm(self, h1: str, h2: str) -> None:
+        q = self.switches.copy()
+        s = []  # Route 
+        d = {}  # value to reach a switch
+        p = {}  # 
+
+        for host in self.hosts:
+            if h1 == host.ip:
+                switch1 = host.switch
+            if h2 == host.ip:
+                switch2 = host.switch
+        
         
 
 
