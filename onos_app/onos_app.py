@@ -1,5 +1,6 @@
 import requests
 import json
+from jsonGenerator import generateJson
 
 class OnosIpException(Exception):
     pass
@@ -119,7 +120,36 @@ class Controller:
         for switch in self.switches:
             print(switch)
     def postFlow(h1, h2, route):
-        pass
+        switches = {}
+        for switch in self.switches:
+            switches[switch.id] = switch
+        for sID in route:
+            currentSwitch = switches[sID]
+            if currentSwitch.id == route[0]:
+                for host in currentSwitch.hosts:
+                    if host.ip == h1:
+                        flowRule = generateJson(sID, host.ip, host.locationPort, 60)
+                        self.s.post(f"{self.url}/flows/{sID}", data=flowRule)
+                        break
+            elif currentSwitch.id == route[-1]:
+                for host in currentSwitch.hosts:
+                    if host.ip == h2:
+                        flowRule = generateJson(sID, host.ip, host.locationPort, 60)
+                        self.s.post(f"{self.url}/flows/{sID}", data=flowRule)
+                        break
+            else:
+                for link in currentSwitch.links:
+                    index = route.index(sID)
+                    if link.dst == route[index-1]:
+                        flowRule = generateJson(sID, h1, port=link.srcPort, timeout=60)
+                        self.s.post(f"{self.url}/flows/{sID}", data=flowRule)
+                    elif link.dst == route[index+1]:
+                        flowRule = generateJson(sID, h2, port=link.srcPort, timeout=60)
+                        self.s.post(f"{self.url}/flows/{sID}", data=flowRule)
+            
+        
+
+
     # Algorithms #
     def DijkstraAlgorithm(self, h1: str, h2: str, stream = 10) -> list():
         q = self.switches.copy()
@@ -146,12 +176,13 @@ class Controller:
             q.remove(currentSwitch)
             s.add(currentSwitch)
             for link in currentSwitch.links:
-                nextSwitch = switches[link.dst]
-                if nextSwitch in q:
-                    d = u[nextSwitch.id][0]
-                    if d > (u[currentSwitch.id][0] + link.value):
-                        u[nextSwitch.id][0] = (u[currentSwitch.id][0] + link.value)
-                        u[nextSwitch.id][1] = currentSwitch.id
+                if link.state == "ACTIVE":
+                    nextSwitch = switches[link.dst]
+                    if nextSwitch in q:
+                        d = u[nextSwitch.id][0]
+                        if d > (u[currentSwitch.id][0] + link.value):
+                            u[nextSwitch.id][0] = (u[currentSwitch.id][0] + link.value)
+                            u[nextSwitch.id][1] = currentSwitch.id
             del u_copy[id]
         # creating route list #
         result = []
@@ -177,7 +208,7 @@ class Controller:
 
 
 if __name__ == "__main__":
-    test = Controller(ip="192.168.88.27",port="8181",user="onos",password="rocks")
+    test = Controller(ip="192.168.88.14",port="8181",user="onos",password="rocks")
     test.loadDevices()
     test.loadLinks()
     test.loadHosts()
