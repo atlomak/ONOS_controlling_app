@@ -16,6 +16,10 @@ def generateJson(switchID: str, dst, port: int, timeout: int):
   "selector": {
     "criteria": [
       {
+        "type": "IN_PORT",
+        "port": "1"
+      },
+      {
         "type": "ETH_TYPE",
         "ethType": "0x0800"
       },
