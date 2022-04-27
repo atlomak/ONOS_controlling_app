@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     while True:
         x = input("Enter data:<ip 1> <ip 2> <stream[in megabytes]>" + 
-        "\n Type exit to leave")
+        "\nType exit to leave \n")
         x = x.split(" ")
         if x == "exit":
             exit()
