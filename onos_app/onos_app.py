@@ -138,7 +138,6 @@ class Controller:
                         flowRule = generateJson(sID, h2, port=link.srcPort, timeout=60)
                         self.s.post(f"{self.ip}/flows/{sID}", data=flowRule)
                         link.value =+ int(stream)
-                        link.value
             elif currentSwitch.id == route[-1]:
                 for host in currentSwitch.hosts:
                     if host.ip == h2:

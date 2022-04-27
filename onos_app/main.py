@@ -21,6 +21,8 @@ if __name__ == "__main__":
         x = x.split(" ")
         if x == "exit":
             exit()
+        if x == "print":
+            controller.showDevices()
         elif len(x) == 3:
             controller.DijkstraAlgorithm(x[0], x[1], x[2])
         else:
