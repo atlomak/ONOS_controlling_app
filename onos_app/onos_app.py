@@ -119,7 +119,7 @@ class Controller:
     def showDevices(self) -> None:
         for switch in self.switches:
             print(switch)
-    def postFlow(h1, h2, route):
+    def postFlow(h1, h2, route, stream):
         switches = {}
         for switch in self.switches:
             switches[switch.id] = switch
@@ -130,22 +130,39 @@ class Controller:
                     if host.ip == h1:
                         flowRule = generateJson(sID, host.ip, host.locationPort, 60)
                         self.s.post(f"{self.url}/flows/{sID}", data=flowRule)
+                        link.value =+ stream
                         break
+                for link in currentSwitch.links:
+                    index = route.index(sID)
+                    if link.dst == route[index+1]:
+                        flowRule = generateJson(sID, h2, port=link.srcPort, timeout=60)
+                        self.s.post(f"{self.url}/flows/{sID}", data=flowRule)
+                        link.value =+ stream
+                        link.value
             elif currentSwitch.id == route[-1]:
                 for host in currentSwitch.hosts:
                     if host.ip == h2:
                         flowRule = generateJson(sID, host.ip, host.locationPort, 60)
                         self.s.post(f"{self.url}/flows/{sID}", data=flowRule)
+                        link.value =+ stream
                         break
+                for link in currentSwitch.links:
+                    index = route.index(sID)
+                    if link.dst == route[index-1]:
+                        flowRule = generateJson(sID, h1, port=link.srcPort, timeout=60)
+                        self.s.post(f"{self.url}/flows/{sID}", data=flowRule)
+                        link.value =+ stream
             else:
                 for link in currentSwitch.links:
                     index = route.index(sID)
                     if link.dst == route[index-1]:
                         flowRule = generateJson(sID, h1, port=link.srcPort, timeout=60)
                         self.s.post(f"{self.url}/flows/{sID}", data=flowRule)
+                        link.value =+ stream
                     elif link.dst == route[index+1]:
                         flowRule = generateJson(sID, h2, port=link.srcPort, timeout=60)
                         self.s.post(f"{self.url}/flows/{sID}", data=flowRule)
+                        link.value =+ stream
             
         
 
@@ -193,8 +210,8 @@ class Controller:
                 route(next_id)
         route(switch2.id)
         result.reverse()
-        return result
-                
+        self.postFlow(h1, h2, result, stream)
+
             
             
 
