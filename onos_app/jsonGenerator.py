@@ -1,4 +1,3 @@
-import json
 def generateJson(switchID: str, dst, port: int, timeout: int):
     result = {
   "priority": "40000",
