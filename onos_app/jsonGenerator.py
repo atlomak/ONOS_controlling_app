@@ -24,7 +24,7 @@ def generateJson(switchID: str, dst, port: int, timeout: int):
       },
       {
         "type": "IPV4_DST",
-        "ip": str(dst)
+        "ip": f"{dst}/32"
       }
     ]
   }
