@@ -129,35 +129,35 @@ class Controller:
                 for host in currentSwitch.hosts:
                     if host.ip == h1:
                         flowRule = generateJson(sID, host.ip, host.locationPort, 0)
-                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, data=json.dumps(flowRule))
+                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, json=json.dumps(flowRule))
                         break
                 for link in currentSwitch.links:
                     index = route.index(sID)
                     if link.dst == route[index+1]:
                         flowRule = generateJson(sID, h2, port=link.srcPort, timeout=0)
-                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, data=json.dumps(flowRule))
+                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, json=json.dumps(flowRule))
                         link.value =+ int(stream)
             elif currentSwitch.id == route[-1]:
                 for host in currentSwitch.hosts:
                     if host.ip == h2:
                         flowRule = generateJson(sID, host.ip, host.locationPort, 0)
-                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, data=json.dumps(flowRule))
+                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, json=json.dumps(flowRule))
                         break
                 for link in currentSwitch.links:
                     index = route.index(sID)
                     if link.dst == route[index-1]:
                         flowRule = generateJson(sID, h1, port=link.srcPort, timeout=0)
-                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, data=json.dumps(flowRule))
+                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, json=json.dumps(flowRule))
                         link.value =+ int(stream)
             else:
                 for link in currentSwitch.links:
                     index = route.index(sID)
                     if link.dst == route[index-1]:
                         flowRule = generateJson(sID, h1, port=link.srcPort, timeout=0)
-                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, data=json.dumps(flowRule))
+                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, json=json.dumps(flowRule))
                     elif link.dst == route[index+1]:
                         flowRule = generateJson(sID, h2, port=link.srcPort, timeout=0)
-                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, data=json.dumps(flowRule))
+                        self.s.post(f"{self.ip}/flows/{sID}",headers={'Content-type': 'application/json',"Accept": "application/json"}, json=json.dumps(flowRule))
                         link.value =+ int(stream)
             
         
