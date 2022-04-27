@@ -1,6 +1,6 @@
 import json
 def generateJson(switchID: str, dst, port: int, timeout: int):
-    result = json.dumps({
+    result = {
   "priority": 40000,
   "timeout": timeout,
   "isPermanent": "true",
@@ -25,7 +25,7 @@ def generateJson(switchID: str, dst, port: int, timeout: int):
       }
     ]
   }
-})
+}
     return result
 
     
