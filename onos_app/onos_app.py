@@ -119,7 +119,7 @@ class Controller:
     def showDevices(self) -> None:
         for switch in self.switches:
             print(switch)
-    def postFlow(h1, h2, route, stream):
+    def postFlow(self, h1, h2, route, stream):
         switches = {}
         for switch in self.switches:
             switches[switch.id] = switch
