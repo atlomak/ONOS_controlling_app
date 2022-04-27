@@ -19,9 +19,9 @@ if __name__ == "__main__":
         x = input("Enter data:<ip 1> <ip 2> <stream[in megabytes]>" + 
         "\nType exit to leave \n")
         x = x.split(" ")
-        if x == "exit":
+        if x[0] == "exit":
             exit()
-        if x == "print":
+        if x[0] == "print":
             controller.showDevices()
         elif len(x) == 3:
             controller.DijkstraAlgorithm(x[0], x[1], x[2])
