@@ -59,6 +59,7 @@ class Controller:
             self.s = requests.session()
             self.ip = f"http://{ip}:{port}/onos/v1"
             self.s.auth = (user,password)
+            self.s.headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
             self.switches = set()
             self.hosts = set()
             r = self.s.get(url=f"{self.ip}/devices")
