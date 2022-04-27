@@ -1,15 +1,15 @@
 import json
 def generateJson(switchID: str, dst, port: int, timeout: int):
     result = {
-  "priority": 40000,
-  "timeout": timeout,
+  "priority": "40000",
+  "timeout": str(timeout),
   "isPermanent": "true",
-  "deviceId": switchID,
+  "deviceId": str(switchID),
   "treatment": {
     "instructions": [
       {
         "type": "OUTPUT",
-        "port": port
+        "port": str(port)
       }
     ]
   },
@@ -25,7 +25,7 @@ def generateJson(switchID: str, dst, port: int, timeout: int):
       },
       {
         "type": "IPV4_DST",
-        "ip": dst
+        "ip": str(dst)
       }
     ]
   }
