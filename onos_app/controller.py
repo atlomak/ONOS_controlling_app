@@ -1,67 +1,15 @@
 import requests
-import json
-from jsonGenerator import generateJson
+from .jsonGenerator import generateJson
+from .switch import Switch
+from .host import Host
+from .link import Link
+from .exceptions import (OnosControllerError, OnosHostsError, OnosSwitchError, OnosWrongAuth, OnosWrongIP)
 
-#Exceptions
-class OnosControllerError(Exception):
-    """Failed to create Controller object"""
-class OnosWrongAuth(Exception):
-    """The credentials provided are invalid"""
-class OnosHostsError(Exception):
-    """Failed to load Hosts"""
-class OnosSwitchError(Exception):
-    """Failed to load Switches"""
-class OnosWrongIP(Exception):
-    """The Host's ip provied is invalid"""
 
-class Switch:
-    def __init__(self, id, available):
-        self.id = id
-        self.available = available
-        self.links = set()
-        self.hosts = set()
-    def __str__(self):
-        result = f"Switch id: {self.id} available: {self.available}, \nlinks: {len(self.links)}\n"
-        for link in self.links:
-            result = result + str(link)
-        result += f"host(s): {len(self.hosts)}\n"
-        for host in self.hosts:
-            result += str(host) +" \n"
-        return result
-        
-class Host:
-    def __init__(self, ip, mac, switch, locationId, locationPort):
-        self.ip = ip
-        self.mac = mac
-        self.switch = switch
-        self.locationId = locationId
-        self.locationPort = locationPort
-    def __str__(self):
-        result = f" ip: {self.ip} \n" \
-        + f" mac: {self.mac} \n" \
-        + f" switch: {self.locationId} \n" \
-        + f" port: {self.locationPort}"
-        return result
-
-class Link:
-    def __init__(self,src,srcPort,dst,dstPort,state,linkType,value = 1):
-        self.src = src
-        self.srcPort = srcPort
-        self.dst = dst
-        self.dstPort = dstPort
-        self.state = state
-        self.linkType = linkType
-        self.value = value
-    def __str__(self):
-        result = f" src: {self.src} \n"\
-            + f" port: {self.srcPort} \n"\
-            + f" dst: {self.dst} \n"\
-            + f" port: {self.dstPort} \n"
-        return result
-        
 class Controller:
-
+    
     def __init__(self,ip: str,port: str,user: str,password: str) -> None:
+        
         try:
             self.s = requests.session()
             self.ip = f"http://{ip}:{port}/onos/v1"
@@ -71,15 +19,17 @@ class Controller:
             r = self.s.head(url=f"{self.ip}/devices")
             r.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            if err.response.status_code == "401":
-                raise OnosWrongAuth(f"Wrong login or password. Given credentials: {self.auth}")
+            if err.response.status_code == 401:
+                raise OnosWrongAuth(f"Wrong login or password. The credentials that have been provided:\n USER:{self.s.auth[0]} \n PASSWORD:{self.s.auth[1]}")
             else:
                 print(err)
+            print("***CLOSING APP***")
+            exit()
         except requests.exceptions.ConnectionError:
             print("Connection error occurred.")
+            exit()
         finally:
             self.s.close()
-            exit()
 
     def loadDevices(self) -> None:
         try:
@@ -97,8 +47,12 @@ class Controller:
                     self.switches.add(Switch(id=device["id"],available=device["available"]))
         except requests.exceptions.HTTPError as err:
             print(err)
+            print("***CLOSING APP***")
+            exit()
         except requests.exceptions.ConnectionError:
             print("Connection error occurred.")
+            print("***CLOSING APP***")
+            exit()
         finally:
             self.s.close()
 
@@ -124,8 +78,12 @@ class Controller:
                                                 linkType=linkType))            
         except requests.exceptions.HTTPError as err:
             print(err)
+            print("***CLOSING APP***")
+            exit()
         except requests.exceptions.ConnectionError:
             print("Connection error occurred.")
+            print("***CLOSING APP***")
+            exit()
         finally:
             self.s.close()
 
@@ -159,9 +117,11 @@ class Controller:
                         switch.hosts.add(host)            
 
         except requests.exceptions.HTTPError as err:
-            print(err)
+            print(err, "\n ***CLOSING APP***")
+            exit()
         except requests.exceptions.ConnectionError:
-            print("Connection error occurred.")
+            print("Connection error occurred. \n ***CLOSING APP***")
+            exit()
         finally:
             self.s.close()
 
@@ -241,7 +201,8 @@ class Controller:
             switches[switch.id] = switch
         u = {}
         # checking src switch and dst switch #
-        switch1, switch2 = None
+        switch1 = None
+        switch2 = None
         for host in self.hosts:
             if h1 == host.ip:
                 switch1 = host.switch
@@ -249,7 +210,7 @@ class Controller:
                 switch2 = host.switch
         if switch1 == None or switch2 == None:
             x = lambda s1,s2: (h1 if s1 == None else "", h2 if s2 == None else "")
-            raise OnosWrongIP(f"Host(s) with this IP was not found",{x(switch1,switch2)})
+            raise OnosWrongIP(f"Host(s) with this IP was(were) not found {x(switch1,switch2)}")
         for switch in self.switches:
             u[switch.id] = [999,0]
         u[switch1.id] = [0,0]  # distance, previous switch #
@@ -280,6 +241,8 @@ class Controller:
         result.reverse()
         if self.postFlow(h1, h2, result, stream) == True:
             print("SUCCESFUL ADDING ROUTING PATH")
+        else:
+            print("FATAL ERROR WHILE ADDING ROUTING PATH, ONOS RESTART MIGHT BE REQUIRED")
 #Test#
 if __name__ == "__main__":
     
