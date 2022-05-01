@@ -26,7 +26,12 @@ class Controller:
             print("***CLOSING APP***")
             exit()
         except requests.exceptions.ConnectionError:
-            print("Connection error occurred.")
+            print("Connection error occurred. Wrong ip or port")
+            print("***CLOSING APP***")
+            exit()
+        except TimeoutError:
+            print("Connection timeout. Wrong ip or port")
+            print("***CLOSING APP***")
             exit()
         finally:
             self.s.close()
