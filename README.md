@@ -4,5 +4,5 @@ Simple console application to create routing path between two given hosts. App i
 
 ## How to use it
 1. Run `pip install -r requirements.txt` to install dependencies.
-2. Run `main.py` with neccessary flags [--ip and --port]. Example: `python main.py -i 192.168.88.25 -p 8181`.
+2. Run `main.py` with necessary flags [--ip and --port]. Example: `python main.py -i 192.168.88.25 -p 8181`.
 3. If you have changed default ONOS controller username and password use --user and --key flags as in the example above.
